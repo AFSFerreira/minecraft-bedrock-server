@@ -1,0 +1,29 @@
+services:
+  bedrock:
+    image: itzg/minecraft-bedrock-server
+    container_name: minecraft-bedrock
+    restart: unless-stopped
+    environment:
+      EULA: "TRUE"
+      GAMEMODE: survival
+      DIFFICULTY: normal
+      SERVER_NAME: "Pipoca and Nanah's Place"
+      ALLOW_LIST: "false"   # true por padrao na imagem; sem isso ninguem entra sem allowlist manual
+      LEVEL_SEED: "5480987504042101543"
+      # Veja mais variaveis em: https://github.com/itzg/docker-minecraft-bedrock-server
+    ports:
+      - "19132:19132/udp"   # acesso direto na rede local
+    volumes:
+      - ./data:/data
+    stdin_open: true
+    tty: true
+
+  playit:
+    image: ghcr.io/playit-cloud/playit-agent:latest
+    container_name: playit-agent
+    restart: unless-stopped
+    network_mode: "service:bedrock"   # compartilha a rede do bedrock (alcanca via localhost:19132)
+    environment:
+      SECRET_KEY: "${PLAYIT_SECRET_KEY}"
+    depends_on:
+      - bedrock

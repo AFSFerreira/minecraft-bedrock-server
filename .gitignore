@@ -1,0 +1,9 @@
+# Segredo do playit.gg — nunca versionar
+.env
+
+# Tudo dentro de data/ fica de fora por padrao, EXCETO o mundo (save) —
+# o resto e conteudo padrao da engine (vanilla_*, chemistry_*, experimental_*,
+# editor, server_library etc.) ou copias extraidas dos addons que ja estao
+# versionados em addons/ na forma original (.mcpack/.mcaddon).
+data/*
+!data/worlds/
