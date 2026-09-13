@@ -14,9 +14,16 @@ Servidor pessoal de Minecraft Bedrock rodando em Docker, com acesso externo via 
 
 ## Como usar
 
-Subir tudo:
+Primeira vez (só é necessário uma vez, ou numa máquina nova): copiar o `.env.example` pra
+`.env` e preencher a chave do playit.gg — sem isso o túnel não conecta.
 ```bash
 cd ~/minecraft-bedrock
+cp .env.example .env
+# editar .env e preencher PLAYIT_SECRET_KEY (pegue no dashboard do playit.gg)
+```
+
+Subir tudo:
+```bash
 docker compose up -d
 ```
 
