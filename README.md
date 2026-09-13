@@ -49,10 +49,10 @@ just cron-remove   # remove esse agendamento
 ```
 
 **Endereço pra conectar no jogo** (Bedrock → Jogar → Servidores → Adicionar Servidor):
-- Endereço: `schmidt-diploma.tun.ply.gg`
+- Endereço: `schmidt-diploma.tun.ply.gg` (ou o IP direto: `147.185.221.213`)
 - Porta: `64625`
 
-(Esse endereço é gerado pelo painel do playit.gg e pode mudar se o túnel for recriado lá.)
+(Esse endereço/IP é gerado pelo painel do playit.gg e pode mudar se o túnel for recriado lá.)
 
 ## Estrutura de pastas
 
