@@ -142,6 +142,30 @@ está nos próprios arquivos — essa tabela é só referência de UUID pra não
   (conta pessoal do usuário — eu não tenho acesso a esse painel).
 - `PLAYIT_SECRET_KEY` fica só em `.env`, nunca commitar.
 
+## Comandos `just` disponíveis
+
+Ferramentas geridas via `mise` (`mise.toml` fixa `just` numa versão exata, não "latest",
+pra reprodutibilidade — rodar `mise install` antes de usar `just` pela primeira vez numa
+máquina nova).
+
+- `just backup` — para o `bedrock`, commita `data/worlds` no git (com `-` nas linhas de
+  git pra nunca travar o retorno do servidor por falta de mudança ou falha de push), sobe
+  tudo de novo e recria o `playit` por último.
+- `just stop` — só para os containers (`docker compose stop`), sem remover nada.
+- `just provision` — provisiona o servidor do zero numa máquina nova: confere que `.env`
+  existe (aborta com aviso se não), roda `scripts/install-addons.sh` (reextrai todos os
+  addons de `addons/` pras pastas certas em `data/`) e sobe os containers. O mundo em si
+  já vem pronto do `git clone` (está em `data/worlds/`, versionado).
+- `just cron-install` / `just cron-remove` — instalam/removem uma entrada de crontab que
+  roda `just backup` todo dia às 12:00, usando um comentário-marcador
+  (`# minecraft-bedrock-backup`) pra ficar idempotente (rodar de novo substitui em vez de
+  duplicar; remover quando não existe não dá erro). Testado manualmente nesta máquina.
+
+`scripts/install-addons.sh` tem, hardcoded, o mapeamento exato de cada addon em `addons/`
+pra sua pasta de destino em `data/resource_packs/`/`data/behavior_packs/` (mesmos nomes da
+tabela abaixo), incluindo o fix do manifesto do Sanrioverse. Se um addon novo for
+adicionado ao projeto, esse script precisa ganhar mais um bloco pra ele — não é genérico.
+
 ## Versionamento (git)
 
 Repositório privado — decisão consciente de versionar o mundo salvo (`data/worlds/`) junto,

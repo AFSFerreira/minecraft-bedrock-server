@@ -32,6 +32,15 @@ Parar tudo:
 docker compose down
 ```
 
+Ou, usando os atalhos do `just` (requer `mise install` uma vez, pra instalar o `just`):
+```bash
+just stop        # para os containers
+just backup      # backup rápido: para, versiona o mundo no git, sobe de volta
+just provision   # sobe o servidor do zero numa máquina nova (addons + config + mundo)
+just cron-install  # agenda o backup automático todo dia ao meio-dia
+just cron-remove   # remove esse agendamento
+```
+
 **Endereço pra conectar no jogo** (Bedrock → Jogar → Servidores → Adicionar Servidor):
 - Endereço: `schmidt-diploma.tun.ply.gg`
 - Porta: `64625`
@@ -43,8 +52,13 @@ docker compose down
 ```
 minecraft-bedrock/
 ├── docker-compose.yml     # define os dois containers (bedrock + playit)
-├── .env                   # chave secreta do playit.gg (não compartilhar)
+├── .env                   # chave secreta do playit.gg (não compartilhar, fora do git)
 ├── .env.example           # modelo do .env
+├── .gitignore             # ver seção Versionamento abaixo
+├── mise.toml              # fixa a versão do `just` (via mise)
+├── justfile               # atalhos: backup, stop, provision, cron-install/remove
+├── scripts/
+│   └── install-addons.sh  # reinstala os addons de addons/ em data/ (usado por `just provision`)
 ├── AGENTS.md              # contexto técnico detalhado (pra quem for mexer na configuração)
 ├── README.md              # este arquivo
 ├── addons/                # arquivos .mcpack/.mcaddon ORIGINAIS baixados (fonte, não instalados)
@@ -90,6 +104,18 @@ copiar/fazer backup dela diretamente (ver seção Backup no `AGENTS.md`).
 O mundo foi resetado (recomeçado do zero) mantendo a mesma seed, dificuldade e todos os
 addons/gamerules acima — ou seja, o terreno é idêntico ao anterior, só o progresso dos
 jogadores (construções, inventário) que foi zerado.
+
+## Versionamento
+
+Este é um repositório git (privado). O `.gitignore` só deixa de fora `.env` (segredo do
+playit.gg) e o conteúdo de `data/` que não é `data/worlds/` (binário do servidor, packs
+padrão da engine, cópias já extraídas dos addons — tudo regenerável automaticamente ou a
+partir de `addons/`). **O save do mundo (`data/worlds/`) é versionado de propósito**, como
+mecanismo de backup — já que o repo é privado, não há problema de expor o conteúdo do
+mundo em si.
+
+`just backup` automatiza isso (para o servidor, commita, dá push, sobe de novo), e
+`just cron-install` agenda esse comando pra rodar sozinho todo dia ao meio-dia.
 
 ## Detalhes técnicos e "pegadinhas"
 
