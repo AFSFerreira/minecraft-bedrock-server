@@ -1,7 +1,7 @@
 # Minecraft Bedrock Server — "Pipoca and Nanah's Place"
 
 Servidor pessoal de Minecraft Bedrock rodando em Docker, com acesso externo via túnel
-(playit.gg), sem precisar abrir porta no roteador.
+([playit.gg](https://playit.gg)), sem precisar abrir porta no roteador.
 
 ## O que tem aqui
 
@@ -52,7 +52,8 @@ just cron-remove   # remove esse agendamento
 - Endereço: `schmidt-diploma.tun.ply.gg` (ou o IP direto: `147.185.221.213`)
 - Porta: `64625`
 
-(Esse endereço/IP é gerado pelo painel do playit.gg e pode mudar se o túnel for recriado lá.)
+(Esse endereço/IP é gerado no [dashboard do playit.gg](https://playit.gg/account/agents) e
+pode mudar se o túnel for recriado lá.)
 
 ## Estrutura de pastas
 
