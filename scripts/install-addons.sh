@@ -82,4 +82,12 @@ echo "== OptiFPS (RP) =="
 install_pack "$ADDONS/OptiFps v3 (fixed).mcpack" "OptiFps v3" \
   "$DATA/resource_packs/OptiFPS"
 
+echo "== 3D Skin Layer (RP) =="
+work="$TMP/3dskin"
+mkdir -p "$work"
+unzip -oq "$ADDONS/[RP] 3D Skin Layer.mcpack" -d "$work"
+rm -rf "$DATA/resource_packs/3DSkinLayer"
+mkdir -p "$DATA/resource_packs/3DSkinLayer"
+cp -r "$work"/. "$DATA/resource_packs/3DSkinLayer"/
+
 echo "Addons instalados com sucesso."

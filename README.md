@@ -134,6 +134,7 @@ copiar/fazer backup dela diretamente (ver seção Backup no `AGENTS.md`).
 | **Dynamic Light** | Resource + Behavior | Luz dinâmica ao segurar tochas/lanternas/etc |
 | **DarkAge Bizarre Remake** | Resource + Behavior | Addon temático JoJo's Bizarre Adventure (Stands, habilidades) |
 | **OptiFPS** | Resource Pack | Melhora performance/FPS — reduz neblina, simplifica partículas (bom pra celular) |
+| **3D Skin Layer** | Resource Pack | Faz a segunda camada da skin (chapéu, jaqueta, etc.) parecer 3D em vez de plana |
 
 O mundo foi resetado (recomeçado do zero) mantendo a mesma seed, dificuldade e todos os
 addons/gamerules acima — ou seja, o terreno é idêntico ao anterior, só o progresso dos
