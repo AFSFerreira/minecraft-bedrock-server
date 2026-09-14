@@ -118,7 +118,6 @@ restart do `bedrock` é necessário pra ele reler os JSONs restaurados).
 | MailPigeons | ✅ | ✅ | RP `edc335f1-047d-42ea-ae2b-092e2f94c898` / BP `3d387c8d-1b8c-4350-b028-4e10348c74dd` | usa Script API (mecânica de pombo-correio) |
 | ChikawaMob | ✅ | ✅ | RP `0c7ae96a-863e-4c61-a410-57c6b1682b4a` / BP `62e47932-8e5c-45e7-8c2c-4df7287a8ebb` | usa Script API (chatbot com respostas fixas, sem rede) |
 | DynamicLight | ✅ | ✅ | RP `fa2c32a5-7d57-4a2c-8f18-14abf087a6f0` / BP `4d9a3cb8-4ef2-4629-bfc7-f79b021687c2` | só `.mcfunction`, sem Script API |
-| DarkAgeBizarre | ✅ | ✅ | RP `efbd5d95-351b-4dac-8691-18ac435b72b3` / BP `74e7080a-e27a-4f57-819c-1858c3338b57` | addon grande (JoJo's Bizarre Adventure), usa Script API |
 | OptiFPS | ✅ | — | `e5d50e28-8413-43e9-9230-8f0c5ecccf4b` | RP de performance: sobrescreve fog vanilla, simplifica partículas, adiciona seção própria nas Configurações via JSON-UI |
 | 3DSkinLayer | ✅ | — | `4293807a-e806-43f8-94af-268fc552b16b` | RP: faz a segunda camada da skin (overlay) parecer 3D. Sem sobreposição de arquivo com nenhum outro pack instalado |
 

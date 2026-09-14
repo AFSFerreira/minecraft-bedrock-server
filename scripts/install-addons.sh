@@ -72,12 +72,6 @@ install_pack "$ADDONS/DynamicLight v1.4.mcaddon" "DynamicLight RP" \
 install_pack "$ADDONS/DynamicLight v1.4.mcaddon" "DynamicLight BP" \
   "$DATA/behavior_packs/DynamicLight"
 
-echo "== DarkAge Bizarre Remake (RP + BP, vem em dois .mcpack separados) =="
-install_pack "$ADDONS/DarkAge Bizarre Remake v0.7.76 RP.mcpack" \
-  "DarkAge Bizarre Remake v0.7.76 RP" "$DATA/resource_packs/DarkAgeBizarre"
-install_pack "$ADDONS/DarkAge Bizarre Remake v0.7.76 BP.mcpack" \
-  "DarkAge Bizarre Remake v0.7.76 BP" "$DATA/behavior_packs/DarkAgeBizarre"
-
 echo "== OptiFPS (RP) =="
 install_pack "$ADDONS/OptiFps v3 (fixed).mcpack" "OptiFps v3" \
   "$DATA/resource_packs/OptiFPS"

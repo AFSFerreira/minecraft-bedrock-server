@@ -8,7 +8,7 @@ depender da cota de banda de nenhum serviço de terceiro.
 ## O que tem aqui
 
 - **Servidor Bedrock** (`itzg/minecraft-bedrock-server`), sempre reiniciando sozinho
-  (`restart: unless-stopped`), com allowlist desativada, dificuldade normal, gamemode
+  (`restart: unless-stopped`), com allowlist desativada, dificuldade fácil, gamemode
   survival e uma seed fixa.
 - **Cliente do relay** (`frpc`) rodando junto, conectando de saída numa VPS própria
   (Oracle Cloud, Always Free) que expõe a porta do servidor pra internet via UDP —
@@ -116,7 +116,7 @@ copiar/fazer backup dela diretamente (ver seção Backup no `AGENTS.md`).
 |---|---|---|
 | Nome do servidor | Pipoca and Nanah's Place | `docker-compose.yml` |
 | Gamemode | Survival | `docker-compose.yml` |
-| Dificuldade | Normal | `docker-compose.yml` |
+| Dificuldade | Fácil | `docker-compose.yml` |
 | Seed do mundo | `5480987504042101543` | `docker-compose.yml` |
 | Allowlist | Desativada (qualquer um entra) | `docker-compose.yml` |
 | Keep Inventory | Ativado (não perde itens ao morrer) | gamerule, salva no mundo |
@@ -132,7 +132,6 @@ copiar/fazer backup dela diretamente (ver seção Backup no `AGENTS.md`).
 | **Mail Pigeons** | Resource + Behavior | Pombos-correio pra mandar itens entre jogadores |
 | **Chikawa Mob** | Resource + Behavior | Mobs fofos temáticos (Chiikawa) com um pequeno chatbot de respostas fixas |
 | **Dynamic Light** | Resource + Behavior | Luz dinâmica ao segurar tochas/lanternas/etc |
-| **DarkAge Bizarre Remake** | Resource + Behavior | Addon temático JoJo's Bizarre Adventure (Stands, habilidades) |
 | **OptiFPS** | Resource Pack | Melhora performance/FPS — reduz neblina, simplifica partículas (bom pra celular) |
 | **3D Skin Layer** | Resource Pack | Faz a segunda camada da skin (chapéu, jaqueta, etc.) parecer 3D em vez de plana |
 
