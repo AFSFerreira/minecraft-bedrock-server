@@ -8,7 +8,7 @@ depender da cota de banda de nenhum serviço de terceiro.
 ## O que tem aqui
 
 - **Servidor Bedrock** (`itzg/minecraft-bedrock-server`), sempre reiniciando sozinho
-  (`restart: unless-stopped`), com allowlist desativada, dificuldade fácil, gamemode
+  (`restart: unless-stopped`), com allowlist desativada, dificuldade pacífica, gamemode
   survival e uma seed fixa.
 - **Cliente do relay** (`frpc`) rodando junto, conectando de saída numa VPS própria
   (Oracle Cloud, Always Free) que expõe a porta do servidor pra internet via UDP —
@@ -116,7 +116,7 @@ copiar/fazer backup dela diretamente (ver seção Backup no `AGENTS.md`).
 |---|---|---|
 | Nome do servidor | Pipoca and Nanah's Place | `docker-compose.yml` |
 | Gamemode | Survival | `docker-compose.yml` |
-| Dificuldade | Fácil | `docker-compose.yml` |
+| Dificuldade | Pacífica | `docker-compose.yml` |
 | Seed do mundo | `5480987504042101543` | `docker-compose.yml` |
 | Allowlist | Desativada (qualquer um entra) | `docker-compose.yml` |
 | Keep Inventory | Ativado (não perde itens ao morrer) | gamerule, salva no mundo |

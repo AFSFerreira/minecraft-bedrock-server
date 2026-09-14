@@ -6,7 +6,7 @@ services:
     environment:
       EULA: "TRUE"
       GAMEMODE: survival
-      DIFFICULTY: easy
+      DIFFICULTY: peaceful
       SERVER_NAME: "Pipoca and Nanah's Place"
       ALLOW_LIST: "false"   # true por padrao na imagem; sem isso ninguem entra sem allowlist manual
       LEVEL_SEED: "5480987504042101543"
