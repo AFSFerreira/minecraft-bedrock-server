@@ -7,41 +7,32 @@ qualquer `docker compose` ou `docker restart` aqui.
 ## O que é isto
 
 Servidor Minecraft Bedrock Dedicated Server rodando em Docker (`itzg/minecraft-bedrock-server`),
-exposto pra internet via túnel UDP do playit.gg (`ghcr.io/playit-cloud/playit-agent`), sem
-necessidade de abrir porta no roteador.
+exposto pra internet via um relay próprio (self-hosted): `frpc` (cliente, roda aqui em Docker)
+conectando numa VPS gratuita da Oracle Cloud rodando `frps` (servidor do relay). Motivo: estamos
+atrás de CGNAT (sem IP público de verdade), então não dá pra fazer port-forward direto no
+roteador — ver seção "VPS relay" abaixo pra detalhes completos e o porquê de não termos usado
+IPv6 direto (o ONT da operadora, Huawei HG8245Q2, não expõe firewall IPv6 configurável) nem um
+serviço de túnel de terceiro tipo playit.gg (cota de banda limitada no free tier, e teve uma
+instabilidade real do lado deles que derrubou o acesso externo por um bom tempo — foi o que nos
+fez migrar pra esse setup).
 
 Arquivos:
-- `docker-compose.yml` — as duas services (`bedrock`, `playit`)
-- `.env` — contém `PLAYIT_SECRET_KEY` (não versionar, não compartilhar; **não existe** um `.env`
+- `docker-compose.yml` — as duas services (`bedrock`, `frpc`)
+- `.env` — contém `FRP_TOKEN` (não versionar, não compartilhar; **não existe** um `.env`
   de exemplo funcional, use `.env.example` como template)
+- `frp/frpc.toml` — config do cliente do relay. **Esse arquivo É versionado** (ao contrário do
+  `.env`) porque o token não fica hardcoded nele — usa template `{{ .Envs.FRP_TOKEN }}`,
+  resolvido em runtime a partir da env var que o `docker-compose.yml` repassa pro container.
 - `data/` — bind mount completo do `/data` do container. É o estado inteiro do servidor:
   mundo, packs, `server.properties`, allowlist etc. Copiável/portável (ver seção Backup).
 
-## REGRA DE OURO: ordem de restart entre `bedrock` e `playit`
+## Sobre reiniciar o `bedrock`
 
-O `playit` usa `network_mode: "service:bedrock"` (compartilha a network namespace do
-`bedrock` em vez de ter a própria). Isso significa:
-
-**Toda vez que o container `bedrock` for reiniciado ou recriado, por QUALQUER motivo
-(mudança de env var, restart pra carregar um addon novo, reset de mundo, etc.), o
-`playit` fica órfão e para de funcionar** — os logs mostram `NetworkUnreachable` e
-`failed to lookup address information` em loop.
-
-**Correção**: sempre rodar, como ÚLTIMO passo depois de qualquer restart/recreate do
-`bedrock`:
-```bash
-docker compose up -d --force-recreate playit
-```
-Nunca na ordem inversa. Se dois restarts do `bedrock` acontecerem em sequência, só recrie
-o `playit` depois do último.
-
-Como verificar que voltou:
-```bash
-docker logs playit-agent --tail 10
-# procurar: "playit connected; tunnels loaded" com tunnel_count=1 e account_status="verified"
-```
-Erros de `NetworkUnreachable`/reconnect nos primeiros ~5s são normais (handshake inicial via
-IPv6 falha e cai pra IPv4); só é problema se continuar em loop depois de 10s.
+Diferente do setup antigo (playit.gg, que usava `network_mode: "service:bedrock"` e por isso
+precisava ser recriado toda vez que o `bedrock` reiniciava), o `frpc` **não tem essa
+dependência** — ele está na rede padrão do Docker Compose e resolve o serviço `bedrock` pelo
+nome via DNS interno do Docker a cada conexão. Reiniciar/recriar o `bedrock` **não** afeta o
+`frpc`. Não precisa de nenhum passo extra depois de um `docker restart minecraft-bedrock`.
 
 ## Enviar comandos de console pro servidor (gamerule, difficulty, etc.)
 
@@ -98,8 +89,7 @@ Não existe variável de ambiente pra gamerules nem um "instalador" mágico — 
    jogador escolhe na UI), adicionar `"subpack": "<folder_name>"` na mesma entrada — os nomes
    de subpack ficam no array `subpacks` do `manifest.json` do resource pack.
 7. `docker restart minecraft-bedrock`, conferir `docker logs minecraft-bedrock | grep "Pack Stack"`
-   pra confirmar que carregou sem erro.
-8. **Recriar o `playit` por último** (regra de ouro acima).
+   pra confirmar que carregou sem erro. Não precisa mexer no `frpc` depois (ver seção acima).
 
 Pra resetar/regenerar o mundo mantendo os packs: faça backup dos dois JSONs acima antes de
 apagar `data/worlds/Bedrock level`, e restaure-os depois que o mundo novo for criado (mais um
@@ -129,18 +119,85 @@ restart do `bedrock` é necessário pra ele reler os JSONs restaurados).
 | ChikawaMob | ✅ | ✅ | RP `0c7ae96a-863e-4c61-a410-57c6b1682b4a` / BP `62e47932-8e5c-45e7-8c2c-4df7287a8ebb` | usa Script API (chatbot com respostas fixas, sem rede) |
 | DynamicLight | ✅ | ✅ | RP `fa2c32a5-7d57-4a2c-8f18-14abf087a6f0` / BP `4d9a3cb8-4ef2-4629-bfc7-f79b021687c2` | só `.mcfunction`, sem Script API |
 | DarkAgeBizarre | ✅ | ✅ | RP `efbd5d95-351b-4dac-8691-18ac435b72b3` / BP `74e7080a-e27a-4f57-819c-1858c3338b57` | addon grande (JoJo's Bizarre Adventure), usa Script API |
+| OptiFPS | ✅ | — | `e5d50e28-8413-43e9-9230-8f0c5ecccf4b` | RP de performance: sobrescreve fog vanilla, simplifica partículas, adiciona seção própria nas Configurações via JSON-UI |
 
 Ordem completa e atualizada de cada `world_resource_packs.json` / `world_behavior_packs.json`
 está nos próprios arquivos — essa tabela é só referência de UUID pra não precisar reabrir cada
 `manifest.json` de novo.
 
-## Túnel (playit.gg)
+## VPS relay (Oracle Cloud + frp)
 
-- Endereço público atual: `schmidt-diploma.tun.ply.gg:64625` (IP cru equivalente:
-  `147.185.221.213:64625`) — pode mudar se o túnel for recriado no dashboard.
-- Tipo de túnel: Minecraft Bedrock (UDP), criado manualmente no dashboard do playit.gg
-  (conta pessoal do usuário — eu não tenho acesso a esse painel).
-- `PLAYIT_SECRET_KEY` fica só em `.env`, nunca commitar.
+Substituiu o playit.gg em 2026-09-14. Motivo: cota de banda do free tier + uma instabilidade
+real do lado deles (dashboard retornando "API error: internal" em Bandwidth/Tunnel
+Usage/Agent Usage, agente sem conseguir reconectar por 40+ minutos). Investigamos e
+descartamos antes: port-forward IPv4 direto (estamos atrás de CGNAT, confirmado via
+`tracepath` mostrando salto em `100.64.0.0/10`), e IPv6 direto (temos IPv6 público de
+verdade, mas o ONT Huawei HG8245Q2 da operadora não expõe nenhuma tela de firewall/pinhole
+IPv6 pro usuário final).
+
+- **IP público da VPS**: `140.238.187.168` (fixo, não muda)
+- **Provedor**: Oracle Cloud, tier "Always Free"
+- **Shape**: `VM.Standard.E2.1.Micro` (1 OCPU / 1GB RAM, **AMD x86_64**, não ARM) — escolhido
+  porque o shape ARM gratuito (`VM.Standard.A1.Flex`) deu erro de "Out of capacity" na região
+  Brazil East (São Paulo), um problema comum/conhecido de disponibilidade do tier grátis da
+  Oracle. E2.1.Micro é mais que suficiente já que a VPS só roda o relay, não o jogo.
+- **Região**: Brazil East (São Paulo)
+- **Hostname da instância**: `minecraft-relay`
+- **Usuário SSH**: `ubuntu` (imagem Ubuntu)
+- **Chave SSH**: `~/.ssh/oracle-minecraft-relay.key` (privada, fora do repo) — conectar com:
+  ```bash
+  ssh -i ~/.ssh/oracle-minecraft-relay.key ubuntu@140.238.187.168
+  ```
+
+### Como o relay funciona
+
+```
+Jogador → 140.238.187.168:19132 (UDP) → frps (VPS, systemd) → túnel autenticado (TCP 7000)
+       → frpc (aqui, container Docker) → bedrock:19132 (rede interna do Compose)
+```
+
+- **`frps`** (servidor) roda **na VPS**, fora do Docker, como serviço systemd nativo (não
+  containerizado lá — mais simples pra uma única VM pequena que só faz isso):
+  - Binário: `/usr/local/bin/frps` (baixado do GitHub releases, v0.71.0, `linux_amd64`)
+  - Config: `/etc/frp/frps.toml` — `bindPort = 7000`, `auth.token` (mesmo valor do
+    `FRP_TOKEN` local)
+  - Serviço: `sudo systemctl status frps` / `sudo journalctl -u frps -f`
+- **`frpc`** (cliente) roda **aqui**, como container Docker (`docker-compose.yml`), configurado
+  por `frp/frpc.toml`. Conecta de saída na VPS (porta TCP 7000) e expõe
+  `bedrock:19132/udp` → `140.238.187.168:19132`.
+- **Token de autenticação**: gerado com `openssl rand -hex 24`, vive em dois lugares que
+  precisam bater: `.env` (`FRP_TOKEN`, local) e `/etc/frp/frps.toml` (`auth.token`, na VPS).
+  Se um dia precisar trocar, atualize os dois e reinicie `frpc` (aqui) + `frps`
+  (`sudo systemctl restart frps`, na VPS).
+
+### Firewall (duas camadas, as duas precisam liberar as portas)
+
+1. **iptables da própria VPS** (SO): por padrão só libera SSH (porta 22). Regras adicionadas
+   pra TCP 7000 e UDP 19132, persistidas via `netfilter-persistent` (pacote
+   `iptables-persistent`). Conferir com `sudo iptables -L INPUT -n --line-numbers` na VPS.
+2. **Security List da VCN na Oracle** (firewall de nuvem, painel web): regras de ingress
+   criadas manualmente no console (Networking → Virtual Cloud Networks →
+   `minecraft-bedrock` → Security Lists → Default Security List) liberando TCP 7000 e UDP
+   19132 de `0.0.0.0/0`, "stateful" (não marcar "Stateless").
+
+Faltando qualquer uma das duas camadas, a conexão trava em timeout (não "recusada") — foi
+assim que diagnosticamos que faltava a Security List na primeira tentativa.
+
+### Testar sem abrir o jogo
+
+Dá pra verificar se o relay está respondendo de ponta a ponta com um ping RakNet (protocolo
+do Bedrock) direto, sem precisar abrir o Minecraft:
+```python
+import socket, struct, time
+MAGIC = bytes.fromhex("00ffff00fefefefefdfdfdfd12345678")
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.settimeout(6)
+sock.sendto(b'\x01' + struct.pack('>Q', int(time.time()*1000)) + MAGIC + struct.pack('>Q', 12345),
+            ("140.238.187.168", 19132))
+data, addr = sock.recvfrom(2048)
+print(data[35:35+struct.unpack('>H', data[33:35])[0]].decode())  # MOTD do servidor
+```
+Se responder com a MOTD (`MCPE;Pipoca and Nanah's Place;...`), está tudo funcionando.
 
 ## Comandos `just` disponíveis
 
@@ -149,8 +206,8 @@ pra reprodutibilidade — rodar `mise install` antes de usar `just` pela primeir
 máquina nova).
 
 - `just backup` — para o `bedrock`, commita `data/worlds` no git (com `-` nas linhas de
-  git pra nunca travar o retorno do servidor por falta de mudança ou falha de push), sobe
-  tudo de novo e recria o `playit` por último.
+  git pra nunca travar o retorno do servidor por falta de mudança ou falha de push) e sobe
+  tudo de novo (não precisa mexer no `frpc`, ver seção "Sobre reiniciar o bedrock").
 - `just stop` — só para os containers (`docker compose stop`), sem remover nada.
 - `just provision` — provisiona o servidor do zero numa máquina nova: confere que `.env`
   existe (aborta com aviso se não), roda `scripts/install-addons.sh` (reextrai todos os
@@ -172,7 +229,7 @@ Repositório privado — decisão consciente de versionar o mundo salvo (`data/w
 como forma de backup, já que não há problema de privacidade num repo privado.
 
 `.gitignore` mantém de fora:
-- `.env` (segredo do playit.gg — isso vale independente do repo ser privado ou não, é uma
+- `.env` (token do frp — isso vale independente do repo ser privado ou não, é uma
   credencial viva, não um dado pessoal)
 - todo o resto de `data/` (conteúdo padrão da engine tipo `vanilla_*`/`chemistry_*`/
   `experimental_*`, mais as cópias já extraídas dos addons em `resource_packs/`/
@@ -184,8 +241,7 @@ O que fica versionado: `docker-compose.yml`, `.env.example`, `AGENTS.md`, `READM
 **Cuidado ao commitar o mundo**: o save usa LevelDB (ver explicação em conversas anteriores,
 não repetida aqui) — commitar com o servidor rodando pode pegar um estado inconsistente entre
 o WAL e as SSTables. Prefira `docker compose stop bedrock` antes de um `git add data/worlds/`
-+ commit, e subir de novo depois (`docker compose up -d`, seguido de recriar o `playit` por
-último, regra de ouro no topo deste arquivo).
++ commit, e subir de novo depois (`docker compose up -d`).
 
 ## Backup / migração
 
@@ -194,5 +250,7 @@ o WAL e as SSTables. Prefira `docker compose stop bedrock` antes de um `git add 
 docker compose down          # importante: parar antes de copiar (LevelDB não gosta de cópia "quente")
 tar -czf backup.tar.gz -C ~/minecraft-bedrock data docker-compose.yml .env
 ```
-Extrair no destino, `docker compose up -d` (com Docker instalado). O playit-agent não está preso
-à máquina, só precisa do mesmo `.env`.
+Extrair no destino, `docker compose up -d` (com Docker instalado). O `frpc` não está preso
+à máquina de onde roda o `bedrock` — só precisa do mesmo `.env` (`FRP_TOKEN`) e de rede até a
+VPS. A VPS (`frps`) é um recurso separado, independente (ver seção "VPS relay"); não faz parte
+desse backup/migração do `data/`.

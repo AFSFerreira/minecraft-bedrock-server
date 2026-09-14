@@ -1,0 +1,11 @@
+serverAddr = "140.238.187.168"
+serverPort = 7000
+auth.method = "token"
+auth.token = "{{ .Envs.FRP_TOKEN }}"
+
+[[proxies]]
+name = "bedrock-udp"
+type = "udp"
+localIP = "bedrock"
+localPort = 19132
+remotePort = 19132

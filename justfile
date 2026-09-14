@@ -10,27 +10,27 @@ backup:
     -git commit -m "Backup do mundo: $(date '+%Y-%m-%d %H:%M')"
     -git push
     docker compose up -d
-    docker compose up -d --force-recreate playit
 
-# Para o servidor (bedrock + playit), sem remover os containers.
+# Para o servidor (bedrock + frpc), sem remover os containers.
 stop:
     docker compose stop
 
 # Provisiona o servidor inteiro numa máquina nova: instala os addons a partir
 # de addons/ (o mundo em si já vem do git em data/worlds/, com os packs já
 # registrados nos world_*_packs.json) e sobe os containers. Idempotente.
+# Obs: isso sobe o bedrock + frpc localmente; o frps na VPS Oracle é
+# independente e já deve estar rodando (ver AGENTS.md, seção "VPS relay").
 provision:
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -f .env ]; then
-        echo "Falta o arquivo .env (com PLAYIT_SECRET_KEY)."
-        echo "Copie .env.example para .env e preencha a chave antes de continuar."
+        echo "Falta o arquivo .env (com FRP_TOKEN)."
+        echo "Copie .env.example para .env e preencha o token antes de continuar."
         exit 1
     fi
     mise install
     bash scripts/install-addons.sh
     docker compose up -d
-    docker compose up -d --force-recreate playit
     echo "Servidor provisionado e no ar."
 
 # Instala um cron que roda "just backup" todo dia ao meio-dia. Idempotente:

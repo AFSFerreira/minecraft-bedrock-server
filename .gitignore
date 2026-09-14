@@ -1,5 +1,8 @@
-# Segredo do playit.gg — nunca versionar
+# Segredo do frp — nunca versionar
 .env
+
+# Log gerado pelo cron do backup (just cron-install)
+backup.log
 
 # Tudo dentro de data/ fica de fora por padrao, EXCETO o mundo (save) —
 # o resto e conteudo padrao da engine (vanilla_*, chemistry_*, experimental_*,

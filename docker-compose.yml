@@ -18,12 +18,14 @@ services:
     stdin_open: true
     tty: true
 
-  playit:
-    image: ghcr.io/playit-cloud/playit-agent:latest
-    container_name: playit-agent
+  frpc:
+    image: fatedier/frpc:v0.71.0
+    container_name: frpc
     restart: unless-stopped
-    network_mode: "service:bedrock"   # compartilha a rede do bedrock (alcanca via localhost:19132)
     environment:
-      SECRET_KEY: "${PLAYIT_SECRET_KEY}"
+      FRP_TOKEN: "${FRP_TOKEN}"
+    volumes:
+      - ./frp/frpc.toml:/etc/frp/frpc.toml:ro
+    command: ["-c", "/etc/frp/frpc.toml"]
     depends_on:
       - bedrock
